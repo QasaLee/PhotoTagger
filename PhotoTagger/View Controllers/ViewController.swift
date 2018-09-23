@@ -172,7 +172,10 @@ extension ViewController {
             print("Content uploaded with ID: \(firstFileID)")
             
             //3 Call the completion handler to update the UI. At this point, you don’t have any downloaded tags or colors, so simply call this with no data.
-            completion(nil, nil)
+            self.downloadTags(contentID: firstFileID, completion: { (tags) in
+              completion(tags, nil)
+            })
+            
             
           }
           
