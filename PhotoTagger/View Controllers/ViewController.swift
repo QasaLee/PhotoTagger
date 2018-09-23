@@ -182,7 +182,30 @@ extension ViewController {
     })
   }
   
-  
+  func downloadTags(contentID: String, completion: @escaping ([String]?) -> Void) {
+    // 1 Perform an HTTP GET request against the tagging endpoint, sending the URL parameter content with the ID you received after the upload. Again, be sure to replace Basic xxx with your actual authorization header.
+    Alamofire.request("http://api.imagga.com/v1/tagging",
+                      parameters: ["content": contentID],
+                      headers: ["Authorization": "Basic YWNjXzUwMThkMmI5YjUyNmQ2Zjo3ODVjZjg2YWMxYmIwOTdjYjAyZGI3YTEzZjRlM2YwZg=="])
+      
+      // 2 Check that the response was successful, and the result has a value; if not, print the error and call the completion handler.
+      .responseJSON { response in
+        guard response.result.isSuccess,
+          let value = response.result.value else {
+            print("Error while fetching tags: \(String(describing: response.result.error))")
+            completion(nil)
+            return
+        }
+        
+        // 3 Using SwiftyJSON, retrieve the raw tags array from the response. Iterate over each dictionary object in the tags array, retrieving the value associated with the tag key.
+        let tags = JSON(value)["results"][0]["tags"].array?.map { json in
+          json["tag"].stringValue
+        }
+        
+        // 4 Call the completion handler passing in the tags received from the service.
+        completion(tags)
+    }
+  }
   
 }
 
