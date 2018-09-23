@@ -173,7 +173,9 @@ extension ViewController {
             
             //3 Call the completion handler to update the UI. At this point, you don’t have any downloaded tags or colors, so simply call this with no data.
             self.downloadTags(contentID: firstFileID, completion: { (tags) in
-              completion(tags, nil)
+              self.downloadColors(contentID: firstFileID, completion: { (colors) in
+                completion(tags, colors)
+              })
             })
             
             
@@ -210,6 +212,33 @@ extension ViewController {
     }
   }
   
+  func downloadColors(contentID: String, completion: @escaping ([PhotoColor]?) -> Void) {
+    // 1. Perform an HTTP GET request against the colors endpoint, sending the URL parameter content with the ID you received after the upload. Again, be sure to replace Basic xxx with your actual authorization header.
+    Alamofire.request("http://api.imagga.com/v1/colors",
+                      parameters: ["content": contentID],
+                      headers: ["Authorization": "Basic YWNjXzUwMThkMmI5YjUyNmQ2Zjo3ODVjZjg2YWMxYmIwOTdjYjAyZGI3YTEzZjRlM2YwZg=="])
+      .responseJSON { response in
+        
+        // 2 Check that the response was successful, and the result has a value; if not, print the error and call the completion handler.
+        guard response.result.isSuccess,
+          let value = response.result.value else {
+            print("Error while fetching colors: \(String(describing: response.result.error))")
+            completion(nil)
+            return
+        }
+        
+        // 3 Using SwiftyJSON, retrieve the image_colors array from the response. Iterate over each dictionary object in the image_colors array, and transform it into a PhotoColor object. This object pairs colors in the RGB format with the color name as a string.
+        let photoColors = JSON(value)["results"][0]["info"]["image_colors"].array?.map { json in
+          PhotoColor(red: json["r"].intValue,
+                     green: json["g"].intValue,
+                     blue: json["b"].intValue,
+                     colorName: json["closest_palette_color"].stringValue)
+        }
+        
+        // 4 Call the completion handler, passing in the photoColors from the service.
+        completion(photoColors)
+    }
+  }
 }
 
 // Helper function inserted by Swift 4.2 migrator.
