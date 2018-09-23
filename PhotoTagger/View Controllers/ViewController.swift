@@ -135,23 +135,55 @@ extension ViewController {
     
     // 1 The image that’s being uploaded needs to be converted to a Data instance.
     guard let imageData = image.jpegData(compressionQuality: 0.5) else {
-//    guard let imageData = UIImageJPEGRepresentation(image, 0.5) else {
+      //    guard let imageData = UIImageJPEGRepresentation(image, 0.5) else {
       print("Could not get JPEG representation of UIImage")
       return
     }
     
-    // 2
-    Alamofire.upload(multipartFormData: { multipartFormData in
-      multipartFormData.append(imageData,
-                               withName: "imagefile",
-                               fileName: "image.jpg",
-                               mimeType: "image/jpeg")
-    },
-                     to: "http://api.imagga.com/v1/content",
-                     headers: ["Authorization": "Basic xxx"],
-                     encodingCompletion: { encodingResult in
+    // 2 Here you convert the JPEG data blob (imageData) into a MIME multipart request to send to the Imagga content endpoint.
+    Alamofire.upload(
+      multipartFormData: { multipartFormData in
+        multipartFormData.append(imageData,
+                                 withName: "imagefile",
+                                 fileName: "image.jpg",
+                                 mimeType: "image/jpeg")
+        
+    }, to: "http://api.imagga.com/v1/content",
+      headers: ["Authorization": "Basic YWNjXzUwMThkMmI5YjUyNmQ2Zjo3ODVjZjg2YWMxYmIwOTdjYjAyZGI3YTEzZjRlM2YwZg=="],
+      encodingCompletion: { encodingResult in
+        // 0 Every response has a Result enum with a value and type. Using automatic validation, the result is considered a success when it returns a valid HTTP Code between 200 and 299 and the Content Type is of a valid type specified in the Accept HTTP header field.
+        switch encodingResult {
+        case .success(let upload, _, _):
+          upload.uploadProgress { progress in
+            progressCompletion(Float(progress.fractionCompleted))
+          }
+          upload.validate()
+          upload.responseJSON { response in
+            // 1 Check that the upload was successful, and the result has a value; if not, print the error and call the completion handler.
+            guard response.result.isSuccess,
+              let value = response.result.value else {
+                print("Error while uploading file: \(String(describing: response.result.error))")
+                completion(nil, nil)
+                return
+            }
+            
+            // 2 Using SwiftyJSON, retrieve the firstFileID from the response.
+            let firstFileID = JSON(value)["uploaded"][0]["id"].stringValue
+            print("Content uploaded with ID: \(firstFileID)")
+            
+            //3 Call the completion handler to update the UI. At this point, you don’t have any downloaded tags or colors, so simply call this with no data.
+            completion(nil, nil)
+            
+          }
+          
+        case .failure(let encodingError):
+          print(encodingError)
+        }
     })
   }
+  
+  
+  
 }
 
 // Helper function inserted by Swift 4.2 migrator.
