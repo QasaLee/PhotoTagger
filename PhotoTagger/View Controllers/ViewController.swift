@@ -1,31 +1,3 @@
-/// Copyright (c) 2018 Razeware LLC
-///
-/// Permission is hereby granted, free of charge, to any person obtaining a copy
-/// of this software and associated documentation files (the "Software"), to deal
-/// in the Software without restriction, including without limitation the rights
-/// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-/// copies of the Software, and to permit persons to whom the Software is
-/// furnished to do so, subject to the following conditions:
-///
-/// The above copyright notice and this permission notice shall be included in
-/// all copies or substantial portions of the Software.
-///
-/// Notwithstanding the foregoing, you may not use, copy, modify, merge, publish,
-/// distribute, sublicense, create a derivative work, and/or sell copies of the
-/// Software in any work that is designed, intended, or marketed for pedagogical or
-/// instructional purposes related to programming, coding, application development,
-/// or information technology.  Permission for such use, copying, modification,
-/// merger, publication, distribution, sublicensing, creation of derivative works,
-/// or sale is expressly withheld.
-///
-/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-/// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-/// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-/// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-/// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-/// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-/// THE SOFTWARE.
-
 import UIKit
 import SwiftyJSON
 import Alamofire
@@ -148,8 +120,10 @@ extension ViewController {
                                  fileName: "image.jpg",
                                  mimeType: "image/jpeg")
         
-    }, to: "http://api.imagga.com/v1/content",
-      headers: ["Authorization": "Basic YWNjXzUwMThkMmI5YjUyNmQ2Zjo3ODVjZjg2YWMxYmIwOTdjYjAyZGI3YTEzZjRlM2YwZg=="],
+    },
+//      to: "http://api.imagga.com/v1/content",
+//      headers: ["Authorization": "Basic YWNjXzUwMThkMmI5YjUyNmQ2Zjo3ODVjZjg2YWMxYmIwOTdjYjAyZGI3YTEzZjRlM2YwZg=="],
+      with: ImaggaRouter.content,
       encodingCompletion: { encodingResult in
         // 0 Every response has a Result enum with a value and type. Using automatic validation, the result is considered a success when it returns a valid HTTP Code between 200 and 299 and the Content Type is of a valid type specified in the Accept HTTP header field.
         switch encodingResult {
@@ -189,10 +163,13 @@ extension ViewController {
   
   func downloadTags(contentID: String, completion: @escaping ([String]?) -> Void) {
     // 1 Perform an HTTP GET request against the tagging endpoint, sending the URL parameter content with the ID you received after the upload. Again, be sure to replace Basic xxx with your actual authorization header.
-    Alamofire.request("http://api.imagga.com/v1/tagging",
-                      parameters: ["content": contentID],
-                      headers: ["Authorization": "Basic YWNjXzUwMThkMmI5YjUyNmQ2Zjo3ODVjZjg2YWMxYmIwOTdjYjAyZGI3YTEzZjRlM2YwZg=="])
-      
+//    Alamofire.request("http://api.imagga.com/v1/tagging",
+//                      parameters: ["content": contentID],
+//                      headers: ["Authorization": "Basic YWNjXzUwMThkMmI5YjUyNmQ2Zjo3ODVjZjg2YWMxYmIwOTdjYjAyZGI3YTEzZjRlM2YwZg=="]
+//      )
+    Alamofire.request(ImaggaRouter.tags(contentID)
+      )
+    
       // 2 Check that the response was successful, and the result has a value; if not, print the error and call the completion handler.
       .responseJSON { response in
         guard response.result.isSuccess,
@@ -214,10 +191,13 @@ extension ViewController {
   
   func downloadColors(contentID: String, completion: @escaping ([PhotoColor]?) -> Void) {
     // 1. Perform an HTTP GET request against the colors endpoint, sending the URL parameter content with the ID you received after the upload. Again, be sure to replace Basic xxx with your actual authorization header.
-    Alamofire.request("http://api.imagga.com/v1/colors",
-                      parameters: ["content": contentID],
-                      headers: ["Authorization": "Basic YWNjXzUwMThkMmI5YjUyNmQ2Zjo3ODVjZjg2YWMxYmIwOTdjYjAyZGI3YTEzZjRlM2YwZg=="])
-      .responseJSON { response in
+//    Alamofire.request("http://api.imagga.com/v1/colors",
+//                      parameters: ["content": contentID],
+//                      headers: ["Authorization": "Basic YWNjXzUwMThkMmI5YjUyNmQ2Zjo3ODVjZjg2YWMxYmIwOTdjYjAyZGI3YTEzZjRlM2YwZg=="])
+//
+    
+    Alamofire.request(ImaggaRouter.colors(contentID)
+      ).responseJSON { response in
         
         // 2 Check that the response was successful, and the result has a value; if not, print the error and call the completion handler.
         guard response.result.isSuccess,
